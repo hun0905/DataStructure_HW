@@ -3,9 +3,7 @@
 #include <math.h>
 using namespace std;
 class Polynomial; //forward declaration
-
-
-
+//first
 class Term
 {
 	friend Polynomial;
