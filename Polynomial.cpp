@@ -4,6 +4,7 @@
 using namespace std;
 class Polynomial; //forward declaration
 //first
+//second
 class Term
 {
 	friend Polynomial;
