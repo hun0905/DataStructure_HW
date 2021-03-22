@@ -31,7 +31,7 @@ SparseMatrix :: SparseMatrix(int r , int c , int t)
     rows = r;
     cols = c;
     terms = 0;
-    capacity = r*c;
+    capacity = t;
     smArray = new MatrixTerm[capacity];
 }
 SparseMatrix SparseMatrix::Multiply(SparseMatrix b)
@@ -40,14 +40,16 @@ SparseMatrix SparseMatrix::Multiply(SparseMatrix b)
         throw"Incompatible matrices";
 
     SparseMatrix bXpose = b.FastTranspose();
-    SparseMatrix d(rows , b.cols );
+    SparseMatrix d(rows , b.cols );//output matrix
     int currRowIndex = 0,currRowBegin = 0,currRowA = smArray[0].row;
 
     if(terms == capacity)
-        Resizing(terms+1);
-    
+       Resizing(terms+1);
+    //cout<<bXpose.terms<<"\n\n\n\n";
     bXpose.Resizing(bXpose.terms+1);
     smArray[terms].row = rows;
+    //smArray[terms].col = cols;
+    //cout<<b.cols <<"\n\n\n\n";
     bXpose.smArray[b.terms].row = b.cols;
     bXpose.smArray[b.terms].col = -1;//
     int sum = 0;
@@ -59,7 +61,7 @@ SparseMatrix SparseMatrix::Multiply(SparseMatrix b)
         {
             if(smArray[currRowIndex].row != currRowA)
             {
-                d.NewTerm(sum,currRowA,currColB);
+                d.NewTerm(currRowA,currColB,sum);
                 sum = 0;
                 currRowIndex = currRowBegin;
                 while(bXpose.smArray[currColIndex].row == currColB)
@@ -67,7 +69,7 @@ SparseMatrix SparseMatrix::Multiply(SparseMatrix b)
 
                 currColB = bXpose.smArray[currColIndex].row;
             }
-            else if(bXpose.smArray[currColIndex].row != currColB)
+            else if(bXpose.smArray[currColIndex].row != currColB) //
             {
                 d.NewTerm(sum,currRowA,currColB);
                 sum = 0;
@@ -93,6 +95,7 @@ SparseMatrix SparseMatrix::Multiply(SparseMatrix b)
         currRowBegin = currRowIndex;
         currRowA = smArray[currRowIndex].row;
     }
+    
     return d;
 }
 void SparseMatrix::GetValue(int pos,int &row,int &col, int &value)
@@ -154,6 +157,7 @@ SparseMatrix SparseMatrix::FastTranspose()
             b.smArray[j].row = smArray[i].col;
             b.smArray[j].col = smArray[i].row;
             b.smArray[j].value = smArray[i].value;
+            b.terms++;//add by me
             rowStart[smArray[i].col]++;
         }
         delete [] rowSize;
@@ -165,7 +169,6 @@ istream &operator>>(istream &is, SparseMatrix &Sm)
 {
     int row=0 , col=0 , value;
     bool c = true;
-    cout<<"輸入矩陣的value"<<endl;
     while (c)
 	{
 		is >> value;	
@@ -201,7 +204,7 @@ ostream &operator<<(ostream &os , SparseMatrix &Sm)
             }
             else
                cout<<0;
-            if(j != Sm.rows-1)
+            if(j != Sm.rows)
                 cout<<" ";
         }
         cout<<endl;
@@ -210,13 +213,23 @@ ostream &operator<<(ostream &os , SparseMatrix &Sm)
 }
 int main()
 {
-    SparseMatrix sm(2,2) , sm2(2,2) , ans(2,2);
+    int r,c;
+    cout<<"輸入row column"<<endl;
+    cin>>r>>c;
+    SparseMatrix sm(r,c) ;
+    cout<<"輸入矩陣"<<endl;
     cin>>sm;
     cout<<endl;
     cout<<sm<<endl;
+    cout<<"輸入row column"<<endl;
+    cin>>r>>c;
+    SparseMatrix sm2(r,c);
+    cout<<"輸入矩陣"<<endl;
     cin>>sm2;
-    cout<<sm2;
-    ans = sm.Multiply(sm2);
-    cout<<ans;
+    cout<<sm2<<endl;
+    SparseMatrix smT = sm.FastTranspose();
+    cout<<"Transpose"<<smT;
+    SparseMatrix Mult = sm.Multiply(sm2);
+    cout<<Mult;
     return 0;
 }
